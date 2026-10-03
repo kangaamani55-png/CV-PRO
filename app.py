@@ -19,25 +19,26 @@ from reportlab.platypus import (
     Table,
     TableStyle,
     Image as RLImage,
+    HRFlowable,
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 
-# ============================================================
+# =========================================================
 # CONFIGURATION
-# ============================================================
+# =========================================================
 
 st.set_page_config(
     page_title="CV Pro Studio",
     page_icon="📄",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 
-# ============================================================
+# =========================================================
 # TEXTES
-# ============================================================
+# =========================================================
 
 TEXTES = {
     "Français": {
@@ -79,9 +80,9 @@ TEXTES = {
 }
 
 
-# ============================================================
-# MODÈLES
-# ============================================================
+# =========================================================
+# MODÈLES ET COULEURS
+# =========================================================
 
 MODELES = [
     "ATS",
@@ -96,6 +97,7 @@ MODELES = [
     "Minimal",
 ]
 
+
 COULEURS = {
     "Bleu professionnel": "#1F4E79",
     "Bleu moderne": "#2563EB",
@@ -107,20 +109,22 @@ COULEURS = {
     "Noir": "#111111",
 }
 
+
 NIVEAUX = {
     "Français": [
         "Débutant",
-        "Académique",
         "Intermédiaire",
         "Avancé",
+        "Expert",
     ],
     "English": [
         "Beginner",
-        "Academic",
         "Intermediate",
         "Advanced",
+        "Expert",
     ],
 }
+
 
 MOIS_FR = [
     "Janvier",
@@ -138,9 +142,9 @@ MOIS_FR = [
 ]
 
 
-# ============================================================
+# =========================================================
 # SESSION STATE
-# ============================================================
+# =========================================================
 
 DEFAULTS = {
     "nom": "",
@@ -166,14 +170,15 @@ DEFAULTS = {
     "langue_cv": "Français",
 }
 
+
 for key, value in DEFAULTS.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
 
-# ============================================================
-# OUTILS
-# ============================================================
+# =========================================================
+# FONCTIONS UTILITAIRES
+# =========================================================
 
 def esc(value):
     """Échappe le HTML."""
@@ -183,7 +188,9 @@ def esc(value):
 
 
 def couleur_rgb(hex_color):
+    """Convertit une couleur HEX en RGBColor pour Word."""
     hex_color = hex_color.replace("#", "")
+
     return RGBColor(
         int(hex_color[0:2], 16),
         int(hex_color[2:4], 16),
@@ -196,10 +203,7 @@ def format_mois_annee(mois, annee):
 
 
 def choisir_mois_annee(label, key_prefix):
-    """
-    Sélection de date limitée au mois et à l'année.
-    Aucun jour n'est demandé.
-    """
+    """Sélection du mois et de l'année."""
 
     col1, col2 = st.columns(2)
 
@@ -214,13 +218,7 @@ def choisir_mois_annee(label, key_prefix):
         )
 
     with col2:
-        annees = list(
-            range(
-                annee_actuelle + 10,
-                1950 - 1,
-                -1,
-            )
-        )
+        annees = list(range(annee_actuelle + 10, 1949, -1))
 
         annee = st.selectbox(
             f"{label} – Année",
@@ -233,9 +231,7 @@ def choisir_mois_annee(label, key_prefix):
 
 
 def section_card(numero, titre, couleur):
-    """
-    Affiche un titre de section sans faire apparaître le HTML brut.
-    """
+    """Affiche une carte de section."""
 
     st.html(
         f"""
@@ -261,21 +257,29 @@ def section_card(numero, titre, couleur):
                      style="background:{couleur};">
                 </div>
             </div>
-
         </div>
         """
     )
 
 
-# ============================================================
-# CSS
-# ============================================================
+# =========================================================
+# COULEUR ACTUELLE
+# =========================================================
 
 COULEUR = st.session_state.couleur
+
+
+# =========================================================
+# CSS
+# =========================================================
 
 st.markdown(
     f"""
     <style>
+
+    /* =====================================================
+       APPLICATION
+       ===================================================== */
 
     .stApp {{
         background: #f5f7fb;
@@ -287,7 +291,10 @@ st.markdown(
         padding-bottom: 4rem;
     }}
 
-    /* HEADER */
+
+    /* =====================================================
+       HEADER
+       ===================================================== */
 
     .app-header {{
         background: linear-gradient(
@@ -295,10 +302,14 @@ st.markdown(
             {COULEUR},
             #111827
         );
+
         padding: 30px;
         border-radius: 20px;
         margin-bottom: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+
+        box-shadow:
+            0 10px 30px rgba(0,0,0,0.12);
+
         color: white;
     }}
 
@@ -315,57 +326,89 @@ st.markdown(
         font-size: 16px;
     }}
 
-    /* CARTES SECTIONS */
+
+    /* =====================================================
+       CARTES DE SECTION
+       ===================================================== */
 
     .section-card {{
         background: white;
+
         border-radius: 15px;
+
         padding: 18px 20px;
+
         margin-top: 10px;
         margin-bottom: 22px;
+
         display: flex;
+
         align-items: center;
+
         gap: 15px;
-        box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+
+        box-shadow:
+            0 5px 18px rgba(0,0,0,0.06);
     }}
 
     .section-number {{
         width: 44px;
         height: 44px;
+
         min-width: 44px;
+
         border-radius: 12px;
+
         display: flex;
+
         align-items: center;
         justify-content: center;
+
         color: white;
+
         font-size: 18px;
         font-weight: 800;
     }}
 
     .section-title {{
         font-size: 22px;
+
         font-weight: 800;
+
         color: #111827;
     }}
 
     .section-line {{
         width: 50px;
         height: 3px;
+
         border-radius: 10px;
+
         margin-top: 5px;
     }}
 
-    /* CARTES INFO */
+
+    /* =====================================================
+       CARTES INFORMATIONS
+       ===================================================== */
 
     .info-card {{
         background: white;
+
         padding: 20px;
+
         border-radius: 15px;
+
         border: 1px solid #e5e7eb;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+
+        box-shadow:
+            0 4px 15px rgba(0,0,0,0.04);
     }}
 
-    /* SIDEBAR */
+
+    /* =====================================================
+       SIDEBAR
+       ===================================================== */
 
     section[data-testid="stSidebar"] {{
         background: #111827;
@@ -375,7 +418,10 @@ st.markdown(
         color: white;
     }}
 
-    /* INPUTS */
+
+    /* =====================================================
+       INPUTS
+       ===================================================== */
 
     div[data-baseweb="input"],
     div[data-baseweb="textarea"],
@@ -383,48 +429,93 @@ st.markdown(
         border-radius: 10px;
     }}
 
-    /* BOUTONS */
 
-    .stButton > button {{
+    /* =====================================================
+       BOUTONS
+       ===================================================== */
+
+    .stButton > button,
+    .stDownloadButton > button {{
         border-radius: 10px;
+
         font-weight: 700;
+
         min-height: 42px;
     }}
 
-    /* APERÇU */
+
+    /* =====================================================
+       CV
+       ===================================================== */
 
     .cv-paper {{
         background: white;
-        padding: 42px;
-        border-radius: 8px;
-        box-shadow: 0 10px 35px rgba(0,0,0,0.12);
-        margin-top: 15px;
+
+        width: 794px;
+
+        max-width: 100%;
+
+        min-height: 1123px;
+
+        box-sizing: border-box;
+
+        padding: 48px 52px;
+
+        border-radius: 4px;
+
+        box-shadow:
+            0 14px 40px rgba(0,0,0,0.14);
+
+        margin: 20px auto 35px auto;
+
+        color: #111827;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        line-height: 1.5;
+
+        overflow-wrap: anywhere;
     }}
 
     .cv-name {{
         font-size: 31px;
+
         font-weight: 800;
+
         margin-bottom: 4px;
     }}
 
     .cv-title {{
         font-size: 17px;
+
         margin-bottom: 15px;
     }}
 
     .cv-section-title {{
-        font-size: 17px;
+        font-size: 15px;
+
         font-weight: 800;
-        margin-top: 22px;
-        margin-bottom: 7px;
+
+        margin-top: 24px;
+
+        margin-bottom: 5px;
+
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+
+        letter-spacing: 0.7px;
     }}
 
     .cv-line {{
         height: 2px;
-        width: 45px;
-        margin-bottom: 10px;
+
+        width: 100%;
+
+        margin-bottom: 11px;
+
+        border-radius: 2px;
     }}
 
     .cv-item {{
@@ -433,29 +524,229 @@ st.markdown(
 
     .cv-date {{
         font-weight: 700;
+
         color: #4b5563;
+
         font-size: 13px;
     }}
 
     .cv-small {{
         color: #4b5563;
+
         font-size: 13px;
     }}
 
     .cv-contact {{
         color: #374151;
+
         font-size: 13px;
+
         line-height: 1.8;
     }}
 
     .skill {{
         display: inline-block;
+
         padding: 5px 10px;
+
         margin: 3px;
+
         border-radius: 15px;
+
         background: #f1f5f9;
+
         font-size: 12px;
+
         font-weight: 600;
+    }}
+
+
+    /* =====================================================
+       MOBILE
+       ===================================================== */
+
+    @media (max-width: 850px) {{
+
+        .main .block-container {{
+            padding:
+                1rem
+                0.75rem
+                3rem
+                0.75rem;
+
+            max-width: 100%;
+        }}
+
+        .app-header {{
+            padding: 22px 18px;
+
+            border-radius: 14px;
+
+            margin-bottom: 16px;
+        }}
+
+        .app-header h1 {{
+            font-size: 25px;
+
+            line-height: 1.2;
+        }}
+
+        .app-header p {{
+            font-size: 14px;
+
+            line-height: 1.4;
+        }}
+
+        .section-card {{
+            padding: 13px 14px;
+
+            margin-top: 6px;
+
+            margin-bottom: 16px;
+
+            border-radius: 12px;
+
+            gap: 10px;
+        }}
+
+        .section-number {{
+            width: 36px;
+
+            height: 36px;
+
+            min-width: 36px;
+
+            border-radius: 9px;
+
+            font-size: 15px;
+        }}
+
+        .section-title {{
+            font-size: 17px;
+
+            line-height: 1.25;
+        }}
+
+        div[data-testid="stHorizontalBlock"] {{
+            gap: 0.7rem;
+        }}
+
+        input,
+        textarea {{
+            font-size: 16px !important;
+        }}
+
+        .stButton > button,
+        .stDownloadButton > button {{
+            min-height: 48px;
+
+            font-size: 15px;
+
+            border-radius: 10px;
+        }}
+
+        div[data-testid="stExpander"] {{
+            border-radius: 12px;
+
+            margin-bottom: 10px;
+        }}
+
+        .cv-paper {{
+            width: 100%;
+
+            max-width: 100%;
+
+            min-height: auto;
+
+            padding: 25px 20px;
+
+            margin: 12px auto 25px auto;
+
+            border-radius: 3px;
+
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.12);
+
+            overflow-wrap: break-word;
+
+            word-break: normal;
+        }}
+
+        .cv-name {{
+            font-size: 25px;
+
+            line-height: 1.15;
+        }}
+
+        .cv-title {{
+            font-size: 14px;
+
+            line-height: 1.4;
+        }}
+
+        .cv-section-title {{
+            font-size: 13px;
+
+            margin-top: 19px;
+
+            line-height: 1.3;
+        }}
+
+        .cv-contact {{
+            font-size: 11px;
+
+            line-height: 1.7;
+
+            word-break: break-word;
+        }}
+
+        .cv-date {{
+            font-size: 11px;
+        }}
+
+        .cv-small {{
+            font-size: 11px;
+
+            line-height: 1.5;
+        }}
+
+        .cv-item {{
+            margin-bottom: 11px;
+        }}
+
+        .skill {{
+            font-size: 10px;
+
+            padding: 5px 8px;
+
+            margin: 2px;
+        }}
+
+        .cv-paper img {{
+            width: 80px !important;
+
+            height: 80px !important;
+
+            margin-left: 12px !important;
+        }}
+
+        button[data-baseweb="tab"] {{
+            font-size: 12px !important;
+
+            padding-left: 8px !important;
+
+            padding-right: 8px !important;
+        }}
+
+        div[data-testid="stTabs"] > div:first-child {{
+            overflow-x: auto;
+
+            scrollbar-width: thin;
+        }}
+
+        div[data-testid="stMetric"] {{
+            padding: 10px;
+        }}
     }}
 
     </style>
@@ -464,21 +755,26 @@ st.markdown(
 )
 
 
-# ============================================================
+# =========================================================
 # SIDEBAR
-# ============================================================
+# =========================================================
 
 with st.sidebar:
 
     st.markdown("## 📄 CV PRO STUDIO")
-    st.caption("Créateur de CV professionnel")
+
+    st.caption(
+        "Créateur de CV professionnel"
+    )
 
     st.markdown("---")
 
     modele = st.selectbox(
         "🎨 Modèle de CV",
         MODELES,
-        index=MODELES.index(st.session_state.modele),
+        index=MODELES.index(
+            st.session_state.modele
+        ),
     )
 
     st.session_state.modele = modele
@@ -486,17 +782,26 @@ with st.sidebar:
     couleur_nom = st.selectbox(
         "🎨 Couleur principale",
         list(COULEURS.keys()),
-        index=list(COULEURS.values()).index(
+        index=list(
+            COULEURS.values()
+        ).index(
             st.session_state.couleur
         ),
     )
 
-    st.session_state.couleur = COULEURS[couleur_nom]
+    st.session_state.couleur = COULEURS[
+        couleur_nom
+    ]
 
     langue_cv = st.selectbox(
         "🌐 Langue du CV",
         ["Français", "English"],
-        index=0 if st.session_state.langue_cv == "Français" else 1,
+        index=(
+            0
+            if st.session_state.langue_cv
+            == "Français"
+            else 1
+        ),
     )
 
     st.session_state.langue_cv = langue_cv
@@ -523,18 +828,21 @@ with st.sidebar:
     )
 
 
-# ============================================================
+# =========================================================
 # HEADER
-# ============================================================
+# =========================================================
 
 st.html(
-    f"""
+    """
     <div class="app-header">
 
-        <h1>CV Pro Studio</h1>
+        <h1>
+            CV Pro Studio
+        </h1>
 
         <p>
-            Créez un CV professionnel, moderne et prêt à envoyer.
+            Créez un CV professionnel,
+            moderne et prêt à envoyer.
         </p>
 
     </div>
@@ -542,9 +850,9 @@ st.html(
 )
 
 
-# ============================================================
-# TABS
-# ============================================================
+# =========================================================
+# ONGLETS
+# =========================================================
 
 tabs = st.tabs(
     [
@@ -564,9 +872,9 @@ tabs = st.tabs(
 )
 
 
-# ============================================================
-# 1. INFORMATIONS
-# ============================================================
+# =========================================================
+# 1 - INFORMATIONS
+# =========================================================
 
 with tabs[0]:
 
@@ -576,20 +884,22 @@ with tabs[0]:
         COULEUR,
     )
 
-    col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns(
+        [2, 1]
+    )
 
     with col1:
 
         st.session_state.nom = st.text_input(
             "Nom complet",
             value=st.session_state.nom,
-            placeholder="Ex. Amani Francis Kanga",
+            placeholder="Exemple : Amani Francis Kanga",
         )
 
         st.session_state.titre = st.text_input(
             "Titre professionnel",
             value=st.session_state.titre,
-            placeholder="Ex. Chargé de projet environnemental",
+            placeholder="Exemple : Analyste en politiques environnementales",
         )
 
         st.session_state.email = st.text_input(
@@ -607,7 +917,7 @@ with tabs[0]:
         st.session_state.adresse = st.text_input(
             "Adresse",
             value=st.session_state.adresse,
-            placeholder="Ville, Pays",
+            placeholder="Ville, pays",
         )
 
         st.session_state.linkedin = st.text_input(
@@ -619,29 +929,39 @@ with tabs[0]:
         st.session_state.site = st.text_input(
             "Site web",
             value=st.session_state.site,
-            placeholder="www.monsite.com",
+            placeholder="www.exemple.com",
         )
 
     with col2:
 
-        st.markdown("### Photo professionnelle")
+        st.markdown("### 📷 Photo")
 
         photo = st.file_uploader(
-            "Importer une photo",
+            "Ajouter une photo",
             type=["png", "jpg", "jpeg"],
+            key="photo_uploader",
         )
 
         if photo is not None:
-            st.session_state.photo = photo.getvalue()
+            st.session_state.photo = (
+                photo.getvalue()
+            )
+
+        if st.session_state.photo:
+
             st.image(
                 st.session_state.photo,
                 width=180,
             )
 
+            st.success(
+                "Photo ajoutée."
+            )
 
-# ============================================================
-# 2. PROFIL
-# ============================================================
+
+# =========================================================
+# 2 - PROFIL
+# =========================================================
 
 with tabs[1]:
 
@@ -652,20 +972,20 @@ with tabs[1]:
     )
 
     st.session_state.profil = st.text_area(
-        "Présentez votre profil professionnel",
+        "Présentez votre profil",
         value=st.session_state.profil,
         height=180,
         placeholder=(
-            "Présentez brièvement votre formation, "
-            "vos principales compétences, votre expérience "
+            "Présentez votre formation, "
+            "vos compétences, votre expérience "
             "et votre objectif professionnel."
         ),
     )
 
 
-# ============================================================
-# 3. FORMATIONS
-# ============================================================
+# =========================================================
+# 3 - FORMATIONS
+# =========================================================
 
 with tabs[2]:
 
@@ -675,92 +995,93 @@ with tabs[2]:
         COULEUR,
     )
 
-    nombre = st.number_input(
+    nombre_formations = st.number_input(
         "Nombre de formations",
         min_value=0,
         max_value=10,
-        value=max(1, len(st.session_state.formation)),
+        value=max(
+            1,
+            len(st.session_state.formation),
+        ),
         step=1,
     )
 
     formations = []
 
-    for i in range(int(nombre)):
+    for i in range(
+        int(nombre_formations)
+    ):
 
         with st.expander(
-            f"Formation n°{i + 1}",
+            f"🎓 Formation {i + 1}",
             expanded=(i == 0),
         ):
 
             etablissement = st.text_input(
                 "Établissement",
                 key=f"formation_etablissement_{i}",
-                placeholder="Université, école, institut...",
+                placeholder="Université / École",
             )
 
             diplome = st.text_input(
-                "Diplôme / Formation",
+                "Diplôme",
                 key=f"formation_diplome_{i}",
                 placeholder="Licence, Master, BTS...",
             )
 
             domaine = st.text_input(
-                "Domaine / Spécialité",
+                "Domaine / spécialité",
                 key=f"formation_domaine_{i}",
-                placeholder="Ex. Études germaniques",
+                placeholder="Exemple : Études germaniques",
             )
 
-            col1, col2 = st.columns(2)
-
-            with col1:
-                mois_debut, annee_debut = choisir_mois_annee(
-                    "Date de début",
-                    f"formation_{i}_debut",
-                )
+            mois_debut, annee_debut = choisir_mois_annee(
+                "Début",
+                f"formation_debut_{i}",
+            )
 
             en_cours = st.checkbox(
                 "Formation en cours",
-                key=f"formation_{i}_en_cours",
+                key=f"formation_cours_{i}",
             )
 
-            if en_cours:
+            fin = ""
 
-                date_fin = "En cours"
+            if not en_cours:
 
-            else:
+                mois_fin, annee_fin = choisir_mois_annee(
+                    "Fin",
+                    f"formation_fin_{i}",
+                )
 
-                with col2:
-                    mois_fin, annee_fin = choisir_mois_annee(
-                        "Date de fin",
-                        f"formation_{i}_fin",
-                    )
-
-                date_fin = format_mois_annee(
+                fin = format_mois_annee(
                     mois_fin,
                     annee_fin,
                 )
-
-            date_debut = format_mois_annee(
-                mois_debut,
-                annee_debut,
-            )
 
             formations.append(
                 {
                     "etablissement": etablissement,
                     "diplome": diplome,
                     "domaine": domaine,
-                    "debut": date_debut,
-                    "fin": date_fin,
+                    "debut": format_mois_annee(
+                        mois_debut,
+                        annee_debut,
+                    ),
+                    "fin": (
+                        "En cours"
+                        if en_cours
+                        else fin
+                    ),
                 }
             )
 
     st.session_state.formation = formations
 
 
-# ============================================================
-# 4. EXPÉRIENCES
-# ============================================================
+# =========================================================
+# 4 - EXPÉRIENCES
+# =========================================================
 
 with tabs[3]:
 
@@ -770,83 +1091,75 @@ with tabs[3]:
         COULEUR,
     )
 
-    nombre = st.number_input(
+    nombre_experiences = st.number_input(
         "Nombre d'expériences",
         min_value=0,
         max_value=10,
-        value=max(1, len(st.session_state.experiences)),
+        value=len(
+            st.session_state.experiences
+        ),
         step=1,
     )
 
     experiences = []
 
-    for i in range(int(nombre)):
+    for i in range(
+        int(nombre_experiences)
+    ):
 
         with st.expander(
-            f"Expérience professionnelle n°{i + 1}",
+            f"💼 Expérience {i + 1}",
             expanded=(i == 0),
         ):
 
             poste = st.text_input(
-                "Poste occupé",
-                key=f"exp_poste_{i}",
-                placeholder="Ex. Assistant chargé de projet",
+                "Poste",
+                key=f"experience_poste_{i}",
+                placeholder="Intitulé du poste",
             )
 
             entreprise = st.text_input(
                 "Entreprise / Organisation",
-                key=f"exp_entreprise_{i}",
-                placeholder="Nom de l'organisation",
+                key=f"experience_entreprise_{i}",
             )
 
             lieu = st.text_input(
                 "Lieu",
-                key=f"exp_lieu_{i}",
-                placeholder="Ville, Pays",
+                key=f"experience_lieu_{i}",
+                placeholder="Ville, pays",
             )
 
-            col1, col2 = st.columns(2)
+            mois_debut, annee_debut = choisir_mois_annee(
+                "Début",
+                f"experience_debut_{i}",
+            )
 
-            with col1:
-                mois_debut, annee_debut = choisir_mois_annee(
-                    "Date de début",
-                    f"experience_{i}_debut",
+            actuel = st.checkbox(
+                "Poste actuel",
+                key=f"experience_actuel_{i}",
+            )
+
+            fin = ""
+
+            if not actuel:
+
+                mois_fin, annee_fin = choisir_mois_annee(
+                    "Fin",
+                    f"experience_fin_{i}",
                 )
 
-            en_cours = st.checkbox(
-                "Poste actuel",
-                key=f"experience_{i}_en_cours",
-            )
-
-            if en_cours:
-
-                date_fin = "En cours"
-
-            else:
-
-                with col2:
-                    mois_fin, annee_fin = choisir_mois_annee(
-                        "Date de fin",
-                        f"experience_{i}_fin",
-                    )
-
-                date_fin = format_mois_annee(
+                fin = format_mois_annee(
                     mois_fin,
                     annee_fin,
                 )
 
-            date_debut = format_mois_annee(
-                mois_debut,
-                annee_debut,
-            )
-
             description = st.text_area(
-                "Description / Missions",
-                key=f"exp_description_{i}",
+                "Description",
+                key=f"experience_description_{i}",
                 height=130,
                 placeholder=(
-                    "Décrivez vos principales missions "
-                    "et réalisations."
+                    "Décrivez vos principales "
+                    "missions et réalisations."
                 ),
             )
 
@@ -855,8 +1168,15 @@ with tabs[3]:
                     "poste": poste,
                     "entreprise": entreprise,
                     "lieu": lieu,
-                    "debut": date_debut,
-                    "fin": date_fin,
+                    "debut": format_mois_annee(
+                        mois_debut,
+                        annee_debut,
+                    ),
+                    "fin": (
+                        "Poste actuel"
+                        if actuel
+                        else fin
+                    ),
                     "description": description,
                 }
             )
@@ -864,9 +1184,9 @@ with tabs[3]:
     st.session_state.experiences = experiences
 
 
-# ============================================================
-# 5. COMPÉTENCES
-# ============================================================
+# =========================================================
+# 5 - COMPÉTENCES
+# =========================================================
 
 with tabs[4]:
 
@@ -876,52 +1196,59 @@ with tabs[4]:
         COULEUR,
     )
 
-    nombre = st.number_input(
+    nombre_competences = st.number_input(
         "Nombre de compétences",
         min_value=0,
         max_value=20,
-        value=max(1, len(st.session_state.competences)),
+        value=len(
+            st.session_state.competences
+        ),
         step=1,
     )
 
     competences = []
 
-    for i in range(int(nombre)):
+    niveaux_competences = (
+        [
+            "Débutant",
+            "Intermédiaire",
+            "Avancé",
+            "Expert",
+        ]
+        if st.session_state.langue_cv
+        == "Français"
+        else [
+            "Beginner",
+            "Intermediate",
+            "Advanced",
+            "Expert",
+        ]
+    )
+
+    for i in range(
+        int(nombre_competences)
+    ):
 
         with st.expander(
-            f"Compétence n°{i + 1}",
+            f"🛠️ Compétence {i + 1}",
             expanded=(i == 0),
         ):
 
-            nom = st.text_input(
+            nom_competence = st.text_input(
                 "Compétence",
                 key=f"competence_nom_{i}",
-                placeholder="Ex. Gestion de projet",
+                placeholder="Exemple : Analyse de données",
             )
 
             niveau = st.selectbox(
                 "Niveau",
-                (
-                    [
-                        "Débutant",
-                        "Intermédiaire",
-                        "Avancé",
-                        "Expert",
-                    ]
-                    if st.session_state.langue_cv == "Français"
-                    else [
-                        "Beginner",
-                        "Intermediate",
-                        "Advanced",
-                        "Expert",
-                    ]
-                ),
+                niveaux_competences,
                 key=f"competence_niveau_{i}",
             )
 
             competences.append(
                 {
-                    "nom": nom,
+                    "nom": nom_competence,
                     "niveau": niveau,
                 }
             )
@@ -929,9 +1256,9 @@ with tabs[4]:
     st.session_state.competences = competences
 
 
-# ============================================================
-# 6. LANGUES
-# ============================================================
+# =========================================================
+# 6 - LANGUES
+# =========================================================
 
 with tabs[5]:
 
@@ -941,48 +1268,54 @@ with tabs[5]:
         COULEUR,
     )
 
-    nombre = st.number_input(
+    nombre_langues = st.number_input(
         "Nombre de langues",
         min_value=0,
         max_value=10,
-        value=max(1, len(st.session_state.langues)),
+        value=len(
+            st.session_state.langues
+        ),
         step=1,
     )
 
     langues = []
 
-    for i in range(int(nombre)):
+    for i in range(
+        int(nombre_langues)
+    ):
 
         with st.expander(
-            f"Langue n°{i + 1}",
+            f"🌍 Langue {i + 1}",
             expanded=(i == 0),
         ):
 
-            langue = st.text_input(
+            nom_langue = st.text_input(
                 "Langue",
                 key=f"langue_nom_{i}",
-                placeholder="Ex. Allemand",
+                placeholder="Exemple : Allemand",
             )
 
-            niveau = st.selectbox(
+            niveau_langue = st.selectbox(
                 "Niveau",
-                NIVEAUX[st.session_state.langue_cv],
+                NIVEAUX[
+                    st.session_state.langue_cv
+                ],
                 key=f"langue_niveau_{i}",
             )
 
             langues.append(
                 {
-                    "langue": langue,
-                    "niveau": niveau,
+                    "nom": nom_langue,
+                    "niveau": niveau_langue,
                 }
             )
 
     st.session_state.langues = langues
 
 
-# ============================================================
-# 7. CERTIFICATIONS
-# ============================================================
+# =========================================================
+# 7 - CERTIFICATIONS
+# =========================================================
 
 with tabs[6]:
 
@@ -992,59 +1325,57 @@ with tabs[6]:
         COULEUR,
     )
 
-    nombre = st.number_input(
+    nombre_certifications = st.number_input(
         "Nombre de certifications",
         min_value=0,
         max_value=10,
-        value=max(1, len(st.session_state.certifications)),
+        value=len(
+            st.session_state.certifications
+        ),
         step=1,
     )
 
     certifications = []
 
-    for i in range(int(nombre)):
+    for i in range(
+        int(nombre_certifications)
+    ):
 
         with st.expander(
-            f"Certification n°{i + 1}",
+            f"🏅 Certification {i + 1}",
             expanded=(i == 0),
         ):
 
             nom = st.text_input(
                 "Nom de la certification",
-                key=f"cert_nom_{i}",
-                placeholder="Ex. Certification en intelligence artificielle",
+                key=f"certification_nom_{i}",
             )
 
             organisme = st.text_input(
                 "Organisme",
-                key=f"cert_organisme_{i}",
-                placeholder="Nom de l'organisme",
+                key=f"certification_organisme_{i}",
             )
 
-            mois, annee = choisir_mois_annee(
+            date_obtention = st.text_input(
                 "Date d'obtention",
-                f"certification_{i}",
-            )
-
-            date_certification = format_mois_annee(
-                mois,
-                annee,
+                key=f"certification_date_{i}",
+                placeholder="Exemple : Juin 2026",
             )
 
             certifications.append(
                 {
                     "nom": nom,
                     "organisme": organisme,
-                    "date": date_certification,
+                    "date": date_obtention,
                 }
             )
 
     st.session_state.certifications = certifications
 
 
-# ============================================================
-# 8. PROJETS
-# ============================================================
+# =========================================================
+# 8 - PROJETS
+# =========================================================
 
 with tabs[7]:
 
@@ -1055,93 +1386,84 @@ with tabs[7]:
     )
 
     st.info(
-        "Cette section est facultative. "
-        "Si vous ne renseignez aucun projet, "
-        "la section n'apparaîtra pas dans votre CV."
+        "Ajoutez ici vos projets académiques, "
+        "professionnels, associatifs ou personnels."
     )
 
-    nombre = st.number_input(
+    nombre_projets = st.number_input(
         "Nombre de projets",
         min_value=0,
         max_value=10,
-        value=0,
+        value=len(
+            st.session_state.projets
+        ),
         step=1,
     )
 
     projets = []
 
-    for i in range(int(nombre)):
+    for i in range(
+        int(nombre_projets)
+    ):
 
         with st.expander(
-            f"Projet n°{i + 1}",
+            f"🚀 Projet {i + 1}",
             expanded=(i == 0),
         ):
 
             nom = st.text_input(
                 "Nom du projet",
                 key=f"projet_nom_{i}",
-                placeholder="Ex. Eco-cir Bouaké",
             )
 
             role = st.text_input(
                 "Votre rôle",
                 key=f"projet_role_{i}",
-                placeholder="Ex. Responsable du projet",
             )
 
-            col1, col2 = st.columns(2)
+            mois_debut, annee_debut = choisir_mois_annee(
+                "Début",
+                f"projet_debut_{i}",
+            )
 
-            with col1:
+            actuel = st.checkbox(
+                "Projet en cours",
+                key=f"projet_actuel_{i}",
+            )
 
-                mois_debut, annee_debut = choisir_mois_annee(
-                    "Date de début",
-                    f"projet_{i}_debut",
+            fin = ""
+
+            if not actuel:
+
+                mois_fin, annee_fin = choisir_mois_annee(
+                    "Fin",
+                    f"projet_fin_{i}",
                 )
 
-            en_cours = st.checkbox(
-                "Projet en cours",
-                key=f"projet_{i}_en_cours",
-            )
-
-            if en_cours:
-
-                date_fin = "En cours"
-
-            else:
-
-                with col2:
-
-                    mois_fin, annee_fin = choisir_mois_annee(
-                        "Date de fin",
-                        f"projet_{i}_fin",
-                    )
-
-                date_fin = format_mois_annee(
+                fin = format_mois_annee(
                     mois_fin,
                     annee_fin,
                 )
-
-            date_debut = format_mois_annee(
-                mois_debut,
-                annee_debut,
-            )
 
             description = st.text_area(
                 "Description",
                 key=f"projet_description_{i}",
                 height=130,
-                placeholder=(
-                    "Présentez brièvement le projet, "
-                    "son objectif et vos réalisations."
-                ),
             )
 
             projets.append(
                 {
                     "nom": nom,
                     "role": role,
-                    "debut": date_debut,
-                    "fin": date_fin,
+                    "debut": format_mois_annee(
+                        mois_debut,
+                        annee_debut,
+                    ),
+                    "fin": (
+                        "En cours"
+                        if actuel
+                        else fin
+                    ),
                     "description": description,
                 }
             )
@@ -1149,9 +1471,9 @@ with tabs[7]:
     st.session_state.projets = projets
 
 
-# ============================================================
-# 9. ASSOCIATIONS
-# ============================================================
+# =========================================================
+# 9 - ASSOCIATIONS
+# =========================================================
 
 with tabs[8]:
 
@@ -1161,40 +1483,41 @@ with tabs[8]:
         COULEUR,
     )
 
-    nombre = st.number_input(
-        "Nombre d'associations / engagements",
+    nombre_associations = st.number_input(
+        "Nombre d'associations",
         min_value=0,
         max_value=10,
-        value=0,
+        value=len(
+            st.session_state.associations
+        ),
         step=1,
     )
 
     associations = []
 
-    for i in range(int(nombre)):
+    for i in range(
+        int(nombre_associations)
+    ):
 
         with st.expander(
-            f"Association / engagement n°{i + 1}",
+            f"🤝 Association {i + 1}",
             expanded=(i == 0),
         ):
 
             organisation = st.text_input(
-                "Organisation / Association",
-                key=f"association_nom_{i}",
-                placeholder="Nom de l'organisation",
+                "Organisation",
+                key=f"association_organisation_{i}",
             )
 
             role = st.text_input(
-                "Fonction / Rôle",
+                "Rôle",
                 key=f"association_role_{i}",
-                placeholder="Ex. Volontaire",
             )
 
             description = st.text_area(
                 "Description",
                 key=f"association_description_{i}",
-                height=100,
-                placeholder="Décrivez votre engagement.",
+                height=120,
             )
 
             associations.append(
@@ -1208,9 +1531,9 @@ with tabs[8]:
     st.session_state.associations = associations
 
 
-# ============================================================
-# 10. INTÉRÊTS
-# ============================================================
+# =========================================================
+# 10 - INTÉRÊTS
+# =========================================================
 
 with tabs[9]:
 
@@ -1220,53 +1543,54 @@ with tabs[9]:
         COULEUR,
     )
 
-    nombre = st.number_input(
+    nombre_interets = st.number_input(
         "Nombre d'intérêts",
         min_value=0,
         max_value=15,
-        value=0,
+        value=len(
+            st.session_state.interets
+        ),
         step=1,
     )
 
     interets = []
 
-    for i in range(int(nombre)):
+    for i in range(
+        int(nombre_interets)
+    ):
 
-        with st.expander(
-            f"Intérêt / loisir n°{i + 1}",
-            expanded=(i == 0),
-        ):
+        interet = st.text_input(
+            f"Intérêt {i + 1}",
+            key=f"interet_{i}",
+            placeholder="Exemple : Lecture",
+        )
 
-            interet = st.text_input(
-                "Intérêt / loisir",
-                key=f"interet_{i}",
-                placeholder="Ex. Lecture",
-            )
-
-            interets.append(interet)
+        interets.append(
+            interet
+        )
 
     st.session_state.interets = interets
 
 
-# ============================================================
-# 11. OFFRE D'EMPLOI
-# ============================================================
+# =========================================================
+# 11 - ANALYSE D'OFFRE
+# =========================================================
 
 with tabs[10]:
 
     section_card(
         "11",
-        "Offre d'emploi",
+        "Analyse d'une offre d'emploi",
         COULEUR,
     )
 
     st.write(
-        "Collez ici une offre d'emploi pour analyser "
-        "les mots-clés présents dans votre CV."
+        "Collez une offre d'emploi ci-dessous "
+        "pour identifier les mots-clés les plus présents."
     )
 
     st.session_state.offre = st.text_area(
-        "Texte de l'offre",
+        "Offre d'emploi",
         value=st.session_state.offre,
         height=300,
         placeholder=(
@@ -1279,89 +1603,139 @@ with tabs[10]:
         use_container_width=True,
     ):
 
-        offre = st.session_state.offre.lower()
+        texte = (
+            st.session_state.offre
+            .lower()
+        )
 
         mots = re.findall(
             r"\b[a-zA-ZÀ-ÿ]{5,}\b",
-            offre,
+            texte,
         )
 
-        mots_frequents = {}
+        frequences = {}
 
         for mot in mots:
-            mots_frequents[mot] = mots_frequents.get(mot, 0) + 1
 
-        mots_tries = sorted(
-            mots_frequents.items(),
+            frequences[mot] = (
+                frequences.get(mot, 0)
+                + 1
+            )
+
+        classement = sorted(
+            frequences.items(),
             key=lambda x: x[1],
             reverse=True,
         )
 
-        mots_cles = [
-            mot
-            for mot, nombre in mots_tries[:30]
-            if nombre >= 2
+        classement = [
+            item
+            for item in classement
+            if item[1] >= 2
         ]
 
-        st.markdown("### Mots-clés détectés")
+        if classement:
 
-        if mots_cles:
-            st.write(", ".join(mots_cles))
+            st.success(
+                f"{len(classement)} mots-clés "
+                "identifiés."
+            )
+
+            for mot, nombre in classement[:30]:
+
+                st.write(
+                    f"**{mot}** : {nombre} occurrence(s)"
+                )
+
         else:
+
             st.info(
-                "Aucun mot-clé significatif détecté."
+                "Aucun mot-clé répété n'a été trouvé."
             )
 
 
-# ============================================================
-# CONSTRUCTION DU CV HTML
-# ============================================================
+# =========================================================
+# CONSTRUCTION HTML DU CV
+# =========================================================
 
 def build_cv_html():
 
     couleur = st.session_state.couleur
 
-    nom = esc(st.session_state.nom)
-    titre = esc(st.session_state.titre)
+    langue = st.session_state.langue_cv
 
-    contact = []
+    t = TEXTES[langue]
+
+    nom = esc(
+        st.session_state.nom
+    )
+
+    titre = esc(
+        st.session_state.titre
+    )
+
+    # -----------------------------------------------------
+    # CONTACT
+    # -----------------------------------------------------
+
+    contacts = []
 
     if st.session_state.email:
-        contact.append(
+        contacts.append(
             f"✉ {esc(st.session_state.email)}"
         )
 
     if st.session_state.telephone:
-        contact.append(
+        contacts.append(
             f"☎ {esc(st.session_state.telephone)}"
         )
 
     if st.session_state.adresse:
-        contact.append(
+        contacts.append(
             f"⌖ {esc(st.session_state.adresse)}"
         )
 
     if st.session_state.linkedin:
-        contact.append(
+        contacts.append(
             f"LinkedIn : {esc(st.session_state.linkedin)}"
         )
 
     if st.session_state.site:
-        contact.append(
+        contacts.append(
             f"Web : {esc(st.session_state.site)}"
         )
+
+    contact_html = "<br>".join(
+        contacts
+    )
+
+    # -----------------------------------------------------
+    # PHOTO
+    # -----------------------------------------------------
 
     photo_html = ""
 
     if st.session_state.photo:
 
-        image_base64 = base64.b64encode(
+        photo_mime = "image/jpeg"
+
+        if st.session_state.photo.startswith(
+            b"\x89PNG"
+        ):
+            photo_mime = "image/png"
+
+        elif st.session_state.photo.startswith(
+            b"GIF"
+        ):
+            photo_mime = "image/gif"
+
+        photo_base64 = base64.b64encode(
             st.session_state.photo
-        ).decode("utf-8")
+        ).decode()
 
         photo_html = f"""
         <img
-            src="data:image/jpeg;base64,{image_base64}"
+            src="data:{photo_mime};base64,{photo_base64}"
             style="
                 width:110px;
                 height:110px;
@@ -1370,404 +1744,504 @@ def build_cv_html():
                 border:4px solid {couleur};
                 float:right;
                 margin-left:20px;
+                margin-bottom:10px;
             "
-        />
+        >
         """
+
+    # -----------------------------------------------------
+    # DÉBUT DU CV
+    # -----------------------------------------------------
 
     html_cv = f"""
     <div class="cv-paper">
 
         {photo_html}
 
-        <div class="cv-name"
-             style="color:{couleur};">
-            {nom or "Votre nom"}
+        <div
+            class="cv-name"
+            style="color:{couleur};"
+        >
+            {nom}
         </div>
 
-        <div class="cv-title">
-            {titre or "Titre professionnel"}
+        <div
+            class="cv-title"
+            style="color:#374151;"
+        >
+            {titre}
         </div>
 
         <div class="cv-contact">
-            {" &nbsp; | &nbsp; ".join(contact)}
+            {contact_html}
         </div>
 
-        <div style="clear:both;"></div>
+        <div
+            class="cv-line"
+            style="background:{couleur}; margin-top:15px;"
+        >
+        </div>
     """
 
+    # -----------------------------------------------------
     # PROFIL
+    # -----------------------------------------------------
 
-    if st.session_state.profil.strip():
+    if st.session_state.profil:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["profil"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["profil"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
-
-        <div>
-            {esc(st.session_state.profil)}
+        <div class="cv-small">
+            {esc(st.session_state.profil).replace(chr(10), "<br>")}
         </div>
         """
 
+    # -----------------------------------------------------
     # FORMATIONS
+    # -----------------------------------------------------
 
-    formations_valides = [
-        x for x in st.session_state.formation
-        if x.get("diplome") or x.get("etablissement")
-    ]
-
-    if formations_valides:
+    if st.session_state.formation:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["formation"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["formation"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
         """
 
-        for item in formations_valides:
+        for formation in st.session_state.formation:
+
+            if not any(
+                [
+                    formation.get("etablissement"),
+                    formation.get("diplome"),
+                    formation.get("domaine"),
+                ]
+            ):
+                continue
 
             html_cv += f"""
+
             <div class="cv-item">
 
                 <div class="cv-date">
-                    {esc(item["debut"])} – {esc(item["fin"])}
+                    {esc(formation.get("debut", ""))}
+                    –
+                    {esc(formation.get("fin", ""))}
                 </div>
 
                 <strong>
-                    {esc(item["diplome"])}
+                    {esc(formation.get("diplome", ""))}
                 </strong>
 
                 <div class="cv-small">
-                    {esc(item["etablissement"])}
-                    {(" – " + esc(item["domaine"])) if item["domaine"] else ""}
+                    {esc(formation.get("domaine", ""))}
+                </div>
+
+                <div class="cv-small">
+                    {esc(formation.get("etablissement", ""))}
                 </div>
 
             </div>
             """
 
-    # EXPERIENCES
+    # -----------------------------------------------------
+    # EXPÉRIENCES
+    # -----------------------------------------------------
 
-    experiences_valides = [
-        x for x in st.session_state.experiences
-        if x.get("poste") or x.get("entreprise")
-    ]
-
-    if experiences_valides:
+    if st.session_state.experiences:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["experience"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["experience"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
         """
 
-        for item in experiences_valides:
+        for experience in st.session_state.experiences:
+
+            if not any(
+                [
+                    experience.get("poste"),
+                    experience.get("entreprise"),
+                ]
+            ):
+                continue
 
             description = esc(
-                item["description"]
-            ).replace("\n", "<br>")
+                experience.get(
+                    "description",
+                    "",
+                )
+            ).replace(
+                "\n",
+                "<br>",
+            )
 
             html_cv += f"""
+
             <div class="cv-item">
 
                 <div class="cv-date">
-                    {esc(item["debut"])} – {esc(item["fin"])}
+                    {esc(experience.get("debut", ""))}
+                    –
+                    {esc(experience.get("fin", ""))}
                 </div>
 
                 <strong>
-                    {esc(item["poste"])}
+                    {esc(experience.get("poste", ""))}
                 </strong>
 
                 <div class="cv-small">
-                    {esc(item["entreprise"])}
-                    {(" – " + esc(item["lieu"])) if item["lieu"] else ""}
+                    {esc(experience.get("entreprise", ""))}
+                    {(
+                        " – "
+                        + esc(experience.get("lieu", ""))
+                    )
+                    if experience.get("lieu")
+                    else ""}
                 </div>
 
-                <div style="margin-top:5px;">
+                <div class="cv-small">
                     {description}
                 </div>
 
             </div>
             """
 
+    # -----------------------------------------------------
     # COMPÉTENCES
+    # -----------------------------------------------------
 
-    competences_valides = [
-        x for x in st.session_state.competences
-        if x.get("nom")
-    ]
-
-    if competences_valides:
+    if st.session_state.competences:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["competence"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["competence"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
         """
 
-        for item in competences_valides:
+        for competence in st.session_state.competences:
+
+            if not competence.get("nom"):
+                continue
 
             html_cv += f"""
+
             <span class="skill">
-                {esc(item["nom"])}
-                {" – " + esc(item["niveau"]) if item["niveau"] else ""}
+                {esc(competence.get("nom", ""))}
+                –
+                {esc(competence.get("niveau", ""))}
             </span>
             """
 
+    # -----------------------------------------------------
     # LANGUES
+    # -----------------------------------------------------
 
-    langues_valides = [
-        x for x in st.session_state.langues
-        if x.get("langue")
-    ]
-
-    if langues_valides:
+    if st.session_state.langues:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["langue"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["langue"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
         """
 
-        for item in langues_valides:
+        for langue_item in st.session_state.langues:
+
+            if not langue_item.get("nom"):
+                continue
 
             html_cv += f"""
+
             <div class="cv-item">
-                <strong>{esc(item["langue"])}</strong>
-                ({esc(item["niveau"])})
+
+                <strong>
+                    {esc(langue_item.get("nom", ""))}
+                </strong>
+
+                <span class="cv-small">
+                    – {esc(langue_item.get("niveau", ""))}
+                </span>
+
             </div>
             """
 
+    # -----------------------------------------------------
     # CERTIFICATIONS
+    # -----------------------------------------------------
 
-    certifications_valides = [
-        x for x in st.session_state.certifications
-        if x.get("nom")
-    ]
-
-    if certifications_valides:
+    if st.session_state.certifications:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["certification"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["certification"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
         """
 
-        for item in certifications_valides:
+        for certification in st.session_state.certifications:
+
+            if not certification.get("nom"):
+                continue
 
             html_cv += f"""
+
             <div class="cv-item">
 
-                <div class="cv-date">
-                    {esc(item["date"])}
-                </div>
-
                 <strong>
-                    {esc(item["nom"])}
+                    {esc(certification.get("nom", ""))}
                 </strong>
 
                 <div class="cv-small">
-                    {esc(item["organisme"])}
+                    {esc(certification.get("organisme", ""))}
+                    {(
+                        " – "
+                        + esc(certification.get("date", ""))
+                    )
+                    if certification.get("date")
+                    else ""}
                 </div>
 
             </div>
             """
 
+    # -----------------------------------------------------
     # PROJETS
+    # -----------------------------------------------------
 
-    projets_valides = [
-        x for x in st.session_state.projets
-        if x.get("nom")
-    ]
-
-    if projets_valides:
+    if st.session_state.projets:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["projet"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["projet"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
         """
 
-        for item in projets_valides:
+        for projet in st.session_state.projets:
+
+            if not projet.get("nom"):
+                continue
 
             description = esc(
-                item["description"]
-            ).replace("\n", "<br>")
+                projet.get(
+                    "description",
+                    "",
+                )
+            ).replace(
+                "\n",
+                "<br>",
+            )
 
             html_cv += f"""
+
             <div class="cv-item">
 
                 <div class="cv-date">
-                    {esc(item["debut"])} – {esc(item["fin"])}
+                    {esc(projet.get("debut", ""))}
+                    –
+                    {esc(projet.get("fin", ""))}
                 </div>
 
                 <strong>
-                    {esc(item["nom"])}
+                    {esc(projet.get("nom", ""))}
                 </strong>
 
                 <div class="cv-small">
-                    {esc(item["role"])}
+                    {esc(projet.get("role", ""))}
                 </div>
 
-                <div style="margin-top:5px;">
+                <div class="cv-small">
                     {description}
                 </div>
 
             </div>
             """
 
+    # -----------------------------------------------------
     # ASSOCIATIONS
+    # -----------------------------------------------------
 
-    associations_valides = [
-        x for x in st.session_state.associations
-        if x.get("organisation")
-    ]
-
-    if associations_valides:
+    if st.session_state.associations:
 
         html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["association"])}
+
+        <div
+            class="cv-section-title"
+            style="color:{couleur};"
+        >
+            {t["association"]}
         </div>
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
         """
 
-        for item in associations_valides:
+        for association in st.session_state.associations:
+
+            if not association.get(
+                "organisation"
+            ):
+                continue
+
+            description = esc(
+                association.get(
+                    "description",
+                    "",
+                )
+            ).replace(
+                "\n",
+                "<br>",
+            )
 
             html_cv += f"""
+
             <div class="cv-item">
 
                 <strong>
-                    {esc(item["organisation"])}
+                    {esc(association.get("organisation", ""))}
                 </strong>
 
                 <div class="cv-small">
-                    {esc(item["role"])}
+                    {esc(association.get("role", ""))}
                 </div>
 
-                <div>
-                    {esc(item["description"])}
+                <div class="cv-small">
+                    {description}
                 </div>
 
             </div>
             """
 
+    # -----------------------------------------------------
     # INTÉRÊTS
+    # -----------------------------------------------------
 
-    interets_valides = [
-        x for x in st.session_state.interets
-        if x
-    ]
+    if st.session_state.interets:
 
-    if interets_valides:
+        interets_valides = [
+            esc(i)
+            for i in st.session_state.interets
+            if i
+        ]
 
-        html_cv += f"""
-        <div class="cv-section-title"
-             style="color:{couleur};">
-            {esc(TEXTES[st.session_state.langue_cv]["interet"])}
-        </div>
+        if interets_valides:
 
-        <div class="cv-line"
-             style="background:{couleur};">
-        </div>
+            html_cv += f"""
 
-        <div>
-            {" • ".join(esc(x) for x in interets_valides)}
-        </div>
-        """
+            <div
+                class="cv-section-title"
+                style="color:{couleur};"
+            >
+                {t["interet"]}
+            </div>
 
-    html_cv += "</div>"
+            <div class="cv-small">
+                {" • ".join(interets_valides)}
+            </div>
+            """
+
+    # -----------------------------------------------------
+    # FIN
+    # -----------------------------------------------------
+
+    html_cv += """
+
+    </div>
+    """
 
     return html_cv
 
 
-# ============================================================
-# WORD
-# ============================================================
+# =========================================================
+# EXPORT WORD
+# =========================================================
 
 def generate_word():
 
-    doc = Document()
+    document = Document()
 
-    couleur = couleur_rgb(
-        st.session_state.couleur
-    )
-
-    # Marges
-
-    section = doc.sections[0]
+    section = document.sections[0]
 
     section.top_margin = Inches(0.6)
     section.bottom_margin = Inches(0.6)
     section.left_margin = Inches(0.7)
     section.right_margin = Inches(0.7)
 
-    # Nom
+    couleur = couleur_rgb(
+        st.session_state.couleur
+    )
 
-    p = doc.add_paragraph()
+    # -----------------------------------------------------
+    # NOM
+    # -----------------------------------------------------
 
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    paragraph = document.add_paragraph()
 
-    run = p.add_run(
-        st.session_state.nom or "Votre nom"
+    paragraph.alignment = (
+        WD_ALIGN_PARAGRAPH.CENTER
+    )
+
+    run = paragraph.add_run(
+        st.session_state.nom
     )
 
     run.bold = True
     run.font.size = Pt(25)
     run.font.color.rgb = couleur
 
-    # Titre
+    # -----------------------------------------------------
+    # TITRE
+    # -----------------------------------------------------
 
-    p = doc.add_paragraph()
+    paragraph = document.add_paragraph()
 
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    paragraph.alignment = (
+        WD_ALIGN_PARAGRAPH.CENTER
+    )
 
-    run = p.add_run(
-        st.session_state.titre or "Titre professionnel"
+    run = paragraph.add_run(
+        st.session_state.titre
     )
 
     run.bold = True
     run.font.size = Pt(14)
 
-    # Contact
+    # -----------------------------------------------------
+    # CONTACT
+    # -----------------------------------------------------
 
     contacts = []
 
@@ -1791,31 +2265,96 @@ def generate_word():
             st.session_state.linkedin
         )
 
+    if st.session_state.site:
+        contacts.append(
+            st.session_state.site
+        )
+
     if contacts:
 
-        p = doc.add_paragraph()
+        paragraph = document.add_paragraph()
 
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        paragraph.alignment = (
+            WD_ALIGN_PARAGRAPH.CENTER
+        )
 
-        run = p.add_run(
+        run = paragraph.add_run(
             " | ".join(contacts)
         )
 
         run.font.size = Pt(9)
 
+    # -----------------------------------------------------
+    # FONCTION SECTION
+    # -----------------------------------------------------
+
     def word_section(titre):
 
-        p = doc.add_paragraph()
+        paragraph = document.add_paragraph()
 
-        run = p.add_run(titre.upper())
+        paragraph.paragraph_format.space_before = Pt(8)
+        paragraph.paragraph_format.space_after = Pt(3)
+
+        run = paragraph.add_run(
+            titre.upper()
+        )
 
         run.bold = True
-        run.font.size = Pt(12)
+        run.font.size = Pt(11)
         run.font.color.rgb = couleur
 
-    # Profil
+        try:
 
-    if st.session_state.profil.strip():
+            from docx.oxml import OxmlElement
+            from docx.oxml.ns import qn
+
+            p = paragraph._p
+
+            pPr = p.get_or_add_pPr()
+
+            pBdr = OxmlElement(
+                "w:pBdr"
+            )
+
+            bottom = OxmlElement(
+                "w:bottom"
+            )
+
+            bottom.set(
+                qn("w:val"),
+                "single",
+            )
+
+            bottom.set(
+                qn("w:sz"),
+                "6",
+            )
+
+            bottom.set(
+                qn("w:space"),
+                "1",
+            )
+
+            bottom.set(
+                qn("w:color"),
+                st.session_state.couleur.replace(
+                    "#",
+                    "",
+                ),
+            )
+
+            pBdr.append(bottom)
+
+            pPr.append(pBdr)
+
+        except Exception:
+            pass
+
+    # -----------------------------------------------------
+    # PROFIL
+    # -----------------------------------------------------
+
+    if st.session_state.profil:
 
         word_section(
             TEXTES[
@@ -1823,20 +2362,18 @@ def generate_word():
             ]["profil"]
         )
 
-        p = doc.add_paragraph(
+        p = document.add_paragraph(
             st.session_state.profil
         )
 
-        p.paragraph_format.space_after = Pt(6)
+        for run in p.runs:
+            run.font.size = Pt(9)
 
-    # Formations
+    # -----------------------------------------------------
+    # FORMATIONS
+    # -----------------------------------------------------
 
-    formations = [
-        x for x in st.session_state.formation
-        if x.get("diplome") or x.get("etablissement")
-    ]
-
-    if formations:
+    if st.session_state.formation:
 
         word_section(
             TEXTES[
@@ -1844,38 +2381,38 @@ def generate_word():
             ]["formation"]
         )
 
-        for item in formations:
+        for formation in st.session_state.formation:
 
-            p = doc.add_paragraph()
+            p = document.add_paragraph()
 
-            r = p.add_run(
-                f'{item["debut"]} – {item["fin"]}'
+            run = p.add_run(
+                formation.get(
+                    "diplome",
+                    "",
+                )
             )
 
-            r.bold = True
+            run.bold = True
+            run.font.size = Pt(10)
 
             p.add_run(
-                f'\n{item["diplome"]}'
+                f" – {formation.get('domaine', '')}"
             )
 
-            if item["etablissement"]:
-                p.add_run(
-                    f'\n{item["etablissement"]}'
-                )
+            p.add_run(
+                f"\n{formation.get('etablissement', '')}"
+            )
 
-            if item["domaine"]:
-                p.add_run(
-                    f' – {item["domaine"]}'
-                )
+            p.add_run(
+                f"\n{formation.get('debut', '')} – "
+                f"{formation.get('fin', '')}"
+            )
 
-    # Expériences
+    # -----------------------------------------------------
+    # EXPÉRIENCES
+    # -----------------------------------------------------
 
-    experiences = [
-        x for x in st.session_state.experiences
-        if x.get("poste") or x.get("entreprise")
-    ]
-
-    if experiences:
+    if st.session_state.experiences:
 
         word_section(
             TEXTES[
@@ -1883,43 +2420,49 @@ def generate_word():
             ]["experience"]
         )
 
-        for item in experiences:
+        for experience in st.session_state.experiences:
 
-            p = doc.add_paragraph()
+            p = document.add_paragraph()
 
-            r = p.add_run(
-                f'{item["debut"]} – {item["fin"]}'
+            run = p.add_run(
+                experience.get(
+                    "poste",
+                    "",
+                )
             )
 
-            r.bold = True
+            run.bold = True
 
             p.add_run(
-                f'\n{item["poste"]}'
+                f" – {experience.get('entreprise', '')}"
             )
 
-            if item["entreprise"]:
+            if experience.get("lieu"):
                 p.add_run(
-                    f' – {item["entreprise"]}'
+                    f" – {experience.get('lieu')}"
                 )
 
-            if item["lieu"]:
+            p.add_run(
+                f"\n{experience.get('debut', '')} – "
+                f"{experience.get('fin', '')}"
+            )
+
+            if experience.get(
+                "description"
+            ):
                 p.add_run(
-                    f' – {item["lieu"]}'
+                    "\n"
+                    + experience.get(
+                        "description",
+                        "",
+                    )
                 )
 
-            if item["description"]:
-                p.add_run(
-                    f'\n{item["description"]}'
-                )
+    # -----------------------------------------------------
+    # COMPÉTENCES
+    # -----------------------------------------------------
 
-    # Compétences
-
-    competences = [
-        x for x in st.session_state.competences
-        if x.get("nom")
-    ]
-
-    if competences:
+    if st.session_state.competences:
 
         word_section(
             TEXTES[
@@ -1927,29 +2470,25 @@ def generate_word():
             ]["competence"]
         )
 
-        for item in competences:
+        for competence in st.session_state.competences:
 
-            p = doc.add_paragraph(
-                style="List Bullet"
+            p = document.add_paragraph(
+                style=None
             )
 
             p.add_run(
-                item["nom"]
-            ).bold = True
+                f"• {competence.get('nom', '')} "
+            )
 
-            if item["niveau"]:
-                p.add_run(
-                    f' – {item["niveau"]}'
-                )
+            p.add_run(
+                f"({competence.get('niveau', '')})"
+            )
 
-    # Langues
+    # -----------------------------------------------------
+    # LANGUES
+    # -----------------------------------------------------
 
-    langues = [
-        x for x in st.session_state.langues
-        if x.get("langue")
-    ]
-
-    if langues:
+    if st.session_state.langues:
 
         word_section(
             TEXTES[
@@ -1957,28 +2496,23 @@ def generate_word():
             ]["langue"]
         )
 
-        for item in langues:
+        for langue in st.session_state.langues:
 
-            p = doc.add_paragraph(
-                style="List Bullet"
+            p = document.add_paragraph()
+
+            p.add_run(
+                f"• {langue.get('nom', '')} "
             )
 
             p.add_run(
-                item["langue"]
-            ).bold = True
-
-            p.add_run(
-                f' ({item["niveau"]})'
+                f"({langue.get('niveau', '')})"
             )
 
-    # Certifications
+    # -----------------------------------------------------
+    # CERTIFICATIONS
+    # -----------------------------------------------------
 
-    certifications = [
-        x for x in st.session_state.certifications
-        if x.get("nom")
-    ]
-
-    if certifications:
+    if st.session_state.certifications:
 
         word_section(
             TEXTES[
@@ -1986,31 +2520,31 @@ def generate_word():
             ]["certification"]
         )
 
-        for item in certifications:
+        for certification in st.session_state.certifications:
 
-            p = doc.add_paragraph()
+            p = document.add_paragraph()
 
             p.add_run(
-                f'{item["date"]} – '
+                certification.get(
+                    "nom",
+                    "",
+                )
             ).bold = True
 
             p.add_run(
-                item["nom"]
-            ).bold = True
+                f" – {certification.get('organisme', '')}"
+            )
 
-            if item["organisme"]:
+            if certification.get("date"):
                 p.add_run(
-                    f' – {item["organisme"]}'
+                    f" – {certification.get('date')}"
                 )
 
-    # Projets
+    # -----------------------------------------------------
+    # PROJETS
+    # -----------------------------------------------------
 
-    projets = [
-        x for x in st.session_state.projets
-        if x.get("nom")
-    ]
-
-    if projets:
+    if st.session_state.projets:
 
         word_section(
             TEXTES[
@@ -2018,36 +2552,41 @@ def generate_word():
             ]["projet"]
         )
 
-        for item in projets:
+        for projet in st.session_state.projets:
 
-            p = doc.add_paragraph()
-
-            p.add_run(
-                f'{item["debut"]} – {item["fin"]}'
-            ).bold = True
+            p = document.add_paragraph()
 
             p.add_run(
-                f'\n{item["nom"]}'
+                projet.get(
+                    "nom",
+                    "",
+                )
             ).bold = True
 
-            if item["role"]:
+            if projet.get("role"):
                 p.add_run(
-                    f' – {item["role"]}'
+                    f" – {projet.get('role')}"
                 )
 
-            if item["description"]:
+            p.add_run(
+                f"\n{projet.get('debut', '')} – "
+                f"{projet.get('fin', '')}"
+            )
+
+            if projet.get("description"):
                 p.add_run(
-                    f'\n{item["description"]}'
+                    "\n"
+                    + projet.get(
+                        "description",
+                        "",
+                    )
                 )
 
-    # Associations
+    # -----------------------------------------------------
+    # ASSOCIATIONS
+    # -----------------------------------------------------
 
-    associations = [
-        x for x in st.session_state.associations
-        if x.get("organisation")
-    ]
-
-    if associations:
+    if st.session_state.associations:
 
         word_section(
             TEXTES[
@@ -2055,29 +2594,41 @@ def generate_word():
             ]["association"]
         )
 
-        for item in associations:
+        for association in st.session_state.associations:
 
-            p = doc.add_paragraph()
+            p = document.add_paragraph()
 
             p.add_run(
-                item["organisation"]
+                association.get(
+                    "organisation",
+                    "",
+                )
             ).bold = True
 
-            if item["role"]:
+            if association.get("role"):
                 p.add_run(
-                    f' – {item["role"]}'
+                    f" – {association.get('role')}"
                 )
 
-            if item["description"]:
+            if association.get(
+                "description"
+            ):
                 p.add_run(
-                    f'\n{item["description"]}'
+                    "\n"
+                    + association.get(
+                        "description",
+                        "",
+                    )
                 )
 
-    # Intérêts
+    # -----------------------------------------------------
+    # INTÉRÊTS
+    # -----------------------------------------------------
 
     interets = [
-        x for x in st.session_state.interets
-        if x
+        i
+        for i in st.session_state.interets
+        if i
     ]
 
     if interets:
@@ -2088,32 +2639,32 @@ def generate_word():
             ]["interet"]
         )
 
-        p = doc.add_paragraph(
+        document.add_paragraph(
             " • ".join(interets)
         )
 
+    # -----------------------------------------------------
+    # SAUVEGARDE
+    # -----------------------------------------------------
+
     output = BytesIO()
 
-    doc.save(output)
+    document.save(output)
 
     output.seek(0)
 
     return output
 
 
-# ============================================================
-# PDF
-# ============================================================
+# =========================================================
+# EXPORT PDF
+# =========================================================
 
 def generate_pdf():
 
     output = BytesIO()
 
-    couleur = HexColor(
-        st.session_state.couleur
-    )
-
-    doc = SimpleDocTemplate(
+    document = SimpleDocTemplate(
         output,
         pagesize=A4,
         rightMargin=35,
@@ -2124,11 +2675,16 @@ def generate_pdf():
 
     styles = getSampleStyleSheet()
 
+    couleur = HexColor(
+        st.session_state.couleur
+    )
+
     name_style = ParagraphStyle(
         "CVName",
-        parent=styles["Heading1"],
+        parent=styles["Normal"],
         fontSize=24,
         leading=28,
+        alignment=1,
         textColor=couleur,
         spaceAfter=4,
     )
@@ -2138,50 +2694,61 @@ def generate_pdf():
         parent=styles["Normal"],
         fontSize=11,
         leading=14,
+        alignment=1,
         spaceAfter=7,
     )
 
     contact_style = ParagraphStyle(
-        "Contact",
+        "CVContact",
         parent=styles["Normal"],
         fontSize=8,
         leading=11,
-        textColor=colors.HexColor("#374151"),
+        alignment=1,
+        textColor=colors.HexColor(
+            "#374151"
+        ),
+        spaceAfter=8,
     )
 
     section_style = ParagraphStyle(
-        "Section",
-        parent=styles["Heading2"],
-        fontSize=12,
-        leading=15,
+        "CVSection",
+        parent=styles["Normal"],
+        fontSize=11,
+        leading=14,
         textColor=couleur,
-        spaceBefore=12,
-        spaceAfter=5,
+        spaceBefore=8,
+        spaceAfter=4,
     )
 
     body_style = ParagraphStyle(
-        "Body",
+        "CVBody",
         parent=styles["Normal"],
         fontSize=9,
-        leading=13,
-        spaceAfter=5,
+        leading=12,
+        spaceAfter=4,
     )
 
     small_style = ParagraphStyle(
-        "Small",
+        "CVSmall",
         parent=styles["Normal"],
         fontSize=8,
-        leading=11,
-        textColor=colors.HexColor("#4B5563"),
+        leading=10,
+        textColor=colors.HexColor(
+            "#4b5563"
+        ),
+        spaceAfter=3,
     )
 
     story = []
+
+    # -----------------------------------------------------
+    # NOM
+    # -----------------------------------------------------
 
     story.append(
         Paragraph(
             esc(
                 st.session_state.nom
-                or "Votre nom"
             ),
             name_style,
         )
@@ -2191,37 +2758,50 @@ def generate_pdf():
         Paragraph(
             esc(
                 st.session_state.titre
-                or "Titre professionnel"
             ),
             title_style,
         )
     )
 
+    # -----------------------------------------------------
+    # CONTACT
+    # -----------------------------------------------------
+
     contacts = []
 
     if st.session_state.email:
         contacts.append(
-            f"Email : {esc(st.session_state.email)}"
+            esc(
+                st.session_state.email
+            )
         )
 
     if st.session_state.telephone:
         contacts.append(
-            f"Tél. : {esc(st.session_state.telephone)}"
+            esc(
+                st.session_state.telephone
+            )
         )
 
     if st.session_state.adresse:
         contacts.append(
-            f"Adresse : {esc(st.session_state.adresse)}"
+            esc(
+                st.session_state.adresse
+            )
         )
 
     if st.session_state.linkedin:
         contacts.append(
-            f"LinkedIn : {esc(st.session_state.linkedin)}"
+            esc(
+                st.session_state.linkedin
+            )
         )
 
     if st.session_state.site:
         contacts.append(
-            f"Web : {esc(st.session_state.site)}"
+            esc(
+                st.session_state.site
+            )
         )
 
     if contacts:
@@ -2233,9 +2813,20 @@ def generate_pdf():
             )
         )
 
-    # Profil
+    story.append(
+        HRFlowable(
+            width="100%",
+            thickness=1.5,
+            color=couleur,
+            spaceAfter=8,
+        )
+    )
 
-    if st.session_state.profil.strip():
+    # -----------------------------------------------------
+    # PROFIL
+    # -----------------------------------------------------
+
+    if st.session_state.profil:
 
         story.append(
             Paragraph(
@@ -2252,19 +2843,19 @@ def generate_pdf():
             Paragraph(
                 esc(
                     st.session_state.profil
-                ).replace("\n", "<br/>"),
+                ).replace(
+                    "\n",
+                    "<br/>",
+                ),
                 body_style,
             )
         )
 
-    # Formations
+    # -----------------------------------------------------
+    # FORMATIONS
+    # -----------------------------------------------------
 
-    formations = [
-        x for x in st.session_state.formation
-        if x.get("diplome") or x.get("etablissement")
-    ]
-
-    if formations:
+    if st.session_state.formation:
 
         story.append(
             Paragraph(
@@ -2277,48 +2868,57 @@ def generate_pdf():
             )
         )
 
-        for item in formations:
+        for formation in st.session_state.formation:
+
+            if not formation.get(
+                "diplome"
+            ):
+                continue
 
             story.append(
                 Paragraph(
-                    f"<b>{esc(item['debut'])} – "
-                    f"{esc(item['fin'])}</b>",
-                    small_style,
-                )
-            )
-
-            story.append(
-                Paragraph(
-                    f"<b>{esc(item['diplome'])}</b>",
+                    f"<b>{esc(formation.get('diplome', ''))}</b>",
                     body_style,
                 )
             )
 
-            texte = esc(
-                item["etablissement"]
-            )
-
-            if item["domaine"]:
-                texte += (
-                    " – "
-                    + esc(item["domaine"])
-                )
-
             story.append(
                 Paragraph(
-                    texte,
+                    esc(
+                        formation.get(
+                            "domaine",
+                            "",
+                        )
+                    ),
                     small_style,
                 )
             )
 
-    # Expériences
+            story.append(
+                Paragraph(
+                    esc(
+                        formation.get(
+                            "etablissement",
+                            "",
+                        )
+                    ),
+                    small_style,
+                )
+            )
 
-    experiences = [
-        x for x in st.session_state.experiences
-        if x.get("poste") or x.get("entreprise")
-    ]
+            story.append(
+                Paragraph(
+                    f"{esc(formation.get('debut', ''))} – "
+                    f"{esc(formation.get('fin', ''))}",
+                    small_style,
+                )
+            )
 
-    if experiences:
+    # -----------------------------------------------------
+    # EXPÉRIENCES
+    # -----------------------------------------------------
+
+    if st.session_state.experiences:
 
         story.append(
             Paragraph(
@@ -2331,62 +2931,67 @@ def generate_pdf():
             )
         )
 
-        for item in experiences:
+        for experience in st.session_state.experiences:
+
+            if not experience.get(
+                "poste"
+            ):
+                continue
 
             story.append(
                 Paragraph(
-                    f"<b>{esc(item['debut'])} – "
-                    f"{esc(item['fin'])}</b>",
-                    small_style,
-                )
-            )
-
-            story.append(
-                Paragraph(
-                    f"<b>{esc(item['poste'])}</b>",
+                    f"<b>{esc(experience.get('poste', ''))}</b> "
+                    f"– {esc(experience.get('entreprise', ''))}",
                     body_style,
                 )
             )
 
-            entreprise = esc(
-                item["entreprise"]
-            )
-
-            if item["lieu"]:
-                entreprise += (
-                    " – "
-                    + esc(item["lieu"])
-                )
-
-            story.append(
-                Paragraph(
-                    entreprise,
-                    small_style,
-                )
-            )
-
-            if item["description"]:
+            if experience.get("lieu"):
 
                 story.append(
                     Paragraph(
                         esc(
-                            item["description"]
+                            experience.get(
+                                "lieu",
+                                "",
+                            )
+                        ),
+                        small_style,
+                    )
+                )
+
+            story.append(
+                Paragraph(
+                    f"{esc(experience.get('debut', ''))} – "
+                    f"{esc(experience.get('fin', ''))}",
+                    small_style,
+                )
+            )
+
+            if experience.get(
+                "description"
+            ):
+
+                story.append(
+                    Paragraph(
+                        esc(
+                            experience.get(
+                                "description",
+                                "",
+                            )
                         ).replace(
                             "\n",
                             "<br/>",
                         ),
-                        body_style,
+                        small_style,
                     )
                 )
 
-    # Compétences
+    # -----------------------------------------------------
+    # COMPÉTENCES
+    # -----------------------------------------------------
 
-    competences = [
-        x for x in st.session_state.competences
-        if x.get("nom")
-    ]
-
-    if competences:
+    if st.session_state.competences:
 
         story.append(
             Paragraph(
@@ -2399,31 +3004,31 @@ def generate_pdf():
             )
         )
 
-        texte = " • ".join(
-            f"<b>{esc(x['nom'])}</b>"
-            + (
-                f" ({esc(x['niveau'])})"
-                if x["niveau"]
-                else ""
+        skills = []
+
+        for competence in st.session_state.competences:
+
+            if competence.get("nom"):
+
+                skills.append(
+                    f"<b>{esc(competence.get('nom', ''))}</b> "
+                    f"({esc(competence.get('niveau', ''))})"
+                )
+
+        if skills:
+
+            story.append(
+                Paragraph(
+                    " • ".join(skills),
+                    body_style,
+                )
             )
-            for x in competences
-        )
 
-        story.append(
-            Paragraph(
-                texte,
-                body_style,
-            )
-        )
+    # -----------------------------------------------------
+    # LANGUES
+    # -----------------------------------------------------
 
-    # Langues
-
-    langues = [
-        x for x in st.session_state.langues
-        if x.get("langue")
-    ]
-
-    if langues:
+    if st.session_state.langues:
 
         story.append(
             Paragraph(
@@ -2436,24 +3041,24 @@ def generate_pdf():
             )
         )
 
-        for item in langues:
+        for langue in st.session_state.langues:
+
+            if not langue.get("nom"):
+                continue
 
             story.append(
                 Paragraph(
-                    f"<b>{esc(item['langue'])}</b> "
-                    f"({esc(item['niveau'])})",
+                    f"<b>{esc(langue.get('nom', ''))}</b> "
+                    f"– {esc(langue.get('niveau', ''))}",
                     body_style,
                 )
             )
 
-    # Certifications
+    # -----------------------------------------------------
+    # CERTIFICATIONS
+    # -----------------------------------------------------
 
-    certifications = [
-        x for x in st.session_state.certifications
-        if x.get("nom")
-    ]
-
-    if certifications:
+    if st.session_state.certifications:
 
         story.append(
             Paragraph(
@@ -2466,29 +3071,47 @@ def generate_pdf():
             )
         )
 
-        for item in certifications:
+        for certification in st.session_state.certifications:
+
+            if not certification.get(
+                "nom"
+            ):
+                continue
+
+            texte = (
+                f"<b>{esc(certification.get('nom', ''))}</b>"
+            )
+
+            if certification.get(
+                "organisme"
+            ):
+
+                texte += (
+                    f" – "
+                    f"{esc(certification.get('organisme'))}"
+                )
+
+            if certification.get(
+                "date"
+            ):
+
+                texte += (
+                    f" – "
+                    f"{esc(certification.get('date'))}"
+                )
 
             story.append(
                 Paragraph(
-                    f"<b>{esc(item['date'])}</b> – "
-                    f"<b>{esc(item['nom'])}</b>"
-                    + (
-                        f" – {esc(item['organisme'])}"
-                        if item["organisme"]
-                        else ""
-                    ),
+                    texte,
                     body_style,
                 )
             )
 
-    # Projets
+    # -----------------------------------------------------
+    # PROJETS
+    # -----------------------------------------------------
 
-    projets = [
-        x for x in st.session_state.projets
-        if x.get("nom")
-    ]
-
-    if projets:
+    if st.session_state.projets:
 
         story.append(
             Paragraph(
@@ -2501,50 +3124,53 @@ def generate_pdf():
             )
         )
 
-        for item in projets:
+        for projet in st.session_state.projets:
+
+            if not projet.get(
+                "nom"
+            ):
+                continue
 
             story.append(
                 Paragraph(
-                    f"<b>{esc(item['debut'])} – "
-                    f"{esc(item['fin'])}</b>",
-                    small_style,
-                )
-            )
-
-            story.append(
-                Paragraph(
-                    f"<b>{esc(item['nom'])}</b>"
-                    + (
-                        f" – {esc(item['role'])}"
-                        if item["role"]
-                        else ""
-                    ),
+                    f"<b>{esc(projet.get('nom', ''))}</b> "
+                    f"– {esc(projet.get('role', ''))}",
                     body_style,
                 )
             )
 
-            if item["description"]:
+            story.append(
+                Paragraph(
+                    f"{esc(projet.get('debut', ''))} – "
+                    f"{esc(projet.get('fin', ''))}",
+                    small_style,
+                )
+            )
+
+            if projet.get(
+                "description"
+            ):
 
                 story.append(
                     Paragraph(
                         esc(
-                            item["description"]
+                            projet.get(
+                                "description",
+                                "",
+                            )
                         ).replace(
                             "\n",
                             "<br/>",
                         ),
-                        body_style,
+                        small_style,
                     )
                 )
 
-    # Associations
+    # -----------------------------------------------------
+    # ASSOCIATIONS
+    # -----------------------------------------------------
 
-    associations = [
-        x for x in st.session_state.associations
-        if x.get("organisation")
-    ]
-
-    if associations:
+    if st.session_state.associations:
 
         story.append(
             Paragraph(
@@ -2557,26 +3183,32 @@ def generate_pdf():
             )
         )
 
-        for item in associations:
+        for association in st.session_state.associations:
+
+            if not association.get(
+                "organisation"
+            ):
+                continue
 
             story.append(
                 Paragraph(
-                    f"<b>{esc(item['organisation'])}</b>"
-                    + (
-                        f" – {esc(item['role'])}"
-                        if item["role"]
-                        else ""
-                    ),
+                    f"<b>{esc(association.get('organisation', ''))}</b> "
+                    f"– {esc(association.get('role', ''))}",
                     body_style,
                 )
             )
 
-            if item["description"]:
+            if association.get(
+                "description"
+            ):
 
                 story.append(
                     Paragraph(
                         esc(
-                            item["description"]
+                            association.get(
+                                "description",
+                                "",
+                            )
                         ).replace(
                             "\n",
                             "<br/>",
@@ -2585,11 +3217,14 @@ def generate_pdf():
                     )
                 )
 
-    # Intérêts
+    # -----------------------------------------------------
+    # INTÉRÊTS
+    # -----------------------------------------------------
 
     interets = [
-        x for x in st.session_state.interets
-        if x
+        esc(i)
+        for i in st.session_state.interets
+        if i
     ]
 
     if interets:
@@ -2607,91 +3242,127 @@ def generate_pdf():
 
         story.append(
             Paragraph(
-                " • ".join(
-                    esc(x)
-                    for x in interets
-                ),
+                " • ".join(interets),
                 body_style,
             )
         )
 
-    doc.build(story)
+    # -----------------------------------------------------
+    # GÉNÉRATION
+    # -----------------------------------------------------
+
+    document.build(story)
 
     output.seek(0)
 
     return output
 
 
-# ============================================================
+# =========================================================
 # SCORE ATS
-# ============================================================
+# =========================================================
 
 def calcul_ats():
 
     score = 0
+
     details = []
 
-    if st.session_state.nom.strip():
-        score += 10
-        details.append("Nom renseigné")
+    if st.session_state.nom:
 
-    if st.session_state.titre.strip():
         score += 10
-        details.append("Titre professionnel renseigné")
+        details.append(
+            "Nom complet"
+        )
 
-    if st.session_state.email.strip():
-        score += 10
-        details.append("E-mail renseigné")
+    if st.session_state.titre:
 
-    if st.session_state.telephone.strip():
         score += 10
-        details.append("Téléphone renseigné")
+        details.append(
+            "Titre professionnel"
+        )
 
-    if st.session_state.profil.strip():
-        score += 10
-        details.append("Profil professionnel présent")
+    if st.session_state.email:
 
-    if any(
-        x.get("diplome")
-        for x in st.session_state.formation
-    ):
         score += 10
-        details.append("Formation renseignée")
+        details.append(
+            "Adresse e-mail"
+        )
 
-    if any(
-        x.get("poste")
-        for x in st.session_state.experiences
-    ):
-        score += 10
-        details.append("Expérience renseignée")
+    if st.session_state.telephone:
 
-    if any(
-        x.get("nom")
-        for x in st.session_state.competences
-    ):
         score += 10
-        details.append("Compétences renseignées")
+        details.append(
+            "Numéro de téléphone"
+        )
+
+    if st.session_state.profil:
+
+        score += 10
+        details.append(
+            "Profil professionnel"
+        )
 
     if any(
-        x.get("langue")
-        for x in st.session_state.langues
+        formation.get("diplome")
+        for formation
+        in st.session_state.formation
     ):
+
         score += 10
-        details.append("Langues renseignées")
+        details.append(
+            "Formation"
+        )
+
+    if any(
+        experience.get("poste")
+        for experience
+        in st.session_state.experiences
+    ):
+
+        score += 10
+        details.append(
+            "Expérience professionnelle"
+        )
+
+    if any(
+        competence.get("nom")
+        for competence
+        in st.session_state.competences
+    ):
+
+        score += 10
+        details.append(
+            "Compétences"
+        )
+
+    if any(
+        langue.get("nom")
+        for langue
+        in st.session_state.langues
+    ):
+
+        score += 10
+        details.append(
+            "Langues"
+        )
 
     if (
         st.session_state.certifications
         or st.session_state.projets
     ):
+
         score += 10
-        details.append("Certifications ou projets présents")
+        details.append(
+            "Certifications ou projets"
+        )
 
     return score, details
 
 
-# ============================================================
-# 12. APERÇU ET EXPORT
-# ============================================================
+# =========================================================
+# 12 - APERÇU ET EXPORT
+# =========================================================
 
 with tabs[11]:
 
@@ -2701,11 +3372,15 @@ with tabs[11]:
         COULEUR,
     )
 
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns(
+        [3, 1]
+    )
 
     with col1:
 
-        st.markdown("### Aperçu du CV")
+        st.markdown(
+            "### 👀 Aperçu du CV"
+        )
 
     with col2:
 
@@ -2716,14 +3391,19 @@ with tabs[11]:
             f"{score}/100",
         )
 
-    st.markdown(
-        build_cv_html(),
-        unsafe_allow_html=True,
+    # -----------------------------------------------------
+    # APERÇU
+    # -----------------------------------------------------
+
+    st.html(
+        build_cv_html()
     )
 
     st.markdown("---")
 
-    st.markdown("### Exporter votre CV")
+    st.markdown(
+        "### 📥 Exporter votre CV"
+    )
 
     col1, col2 = st.columns(2)
 
@@ -2736,8 +3416,8 @@ with tabs[11]:
             data=word_file.getvalue(),
             file_name="CV_Professionnel.docx",
             mime=(
-                "application/vnd.openxmlformats-"
-                "officedocument.wordprocessingml.document"
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
             ),
             use_container_width=True,
         )
@@ -2754,36 +3434,46 @@ with tabs[11]:
             use_container_width=True,
         )
 
+    # -----------------------------------------------------
+    # ANALYSE
+    # -----------------------------------------------------
+
     st.markdown("---")
 
-    st.markdown("### Analyse rapide du CV")
+    st.markdown(
+        "### 📊 Analyse rapide du CV"
+    )
 
     if score >= 80:
 
         st.success(
-            f"Votre CV contient actuellement "
-            f"les principales informations attendues. "
-            f"Score : {score}/100."
+            "Excellent ! Votre CV contient "
+            "la plupart des informations importantes."
         )
 
     elif score >= 60:
 
         st.warning(
-            f"Votre CV est bien avancé, mais certaines "
-            f"sections peuvent encore être complétées. "
-            f"Score : {score}/100."
+            "Votre CV est bien avancé. "
+            "Ajoutez quelques informations "
+            "pour améliorer son contenu."
         )
 
     else:
 
         st.info(
-            f"Votre CV nécessite encore plusieurs "
-            f"informations. Score actuel : {score}/100."
+            "Votre CV peut encore être complété. "
+            "Ajoutez vos informations principales."
         )
 
     if details:
 
-        st.write("Éléments détectés :")
+        st.write(
+            "Éléments détectés :"
+        )
 
         for detail in details:
-            st.write(f"✓ {detail}")
+
+            st.write(
+                f"✓ {detail}"
+            )
